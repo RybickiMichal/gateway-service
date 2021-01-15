@@ -3,6 +3,7 @@ package com.mprybicki.gatewayservice.filter;
 import com.mprybicki.gatewayservice.util.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.RandomStringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpStatus;
@@ -16,7 +17,8 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class AuthorizationFilter extends AbstractGatewayFilterFactory<AuthorizationFilter.Config> {
 
-    JwtUtil jwtUtil = new JwtUtil();
+    @Autowired
+    JwtUtil jwtUtil;
 
     public AuthorizationFilter() {
         super(Config.class);
