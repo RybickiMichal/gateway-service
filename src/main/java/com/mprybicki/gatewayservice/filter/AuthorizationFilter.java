@@ -1,5 +1,6 @@
 package com.mprybicki.gatewayservice.filter;
 
+import com.mprybicki.gatewayservice.service.ValidationService;
 import com.mprybicki.gatewayservice.util.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.RandomStringUtils;
@@ -20,6 +21,9 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
     @Autowired
     JwtUtil jwtUtil;
 
+    @Autowired
+    ValidationService validationService;
+
     public AuthorizationFilter() {
         super(Config.class);
     }
@@ -28,11 +32,11 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
             ServerHttpRequest request = exchange.getRequest();
-            if (!request.getHeaders().containsKey("Authorization")) {
+            if (validationService.isRequestNotContainAuthorizationHeader(request)) {
                 return this.onError(exchange, "No Authorization header", HttpStatus.UNAUTHORIZED);
             }
             String authorizationHeader = request.getHeaders().get("Authorization").get(0);
-            if (!this.isAuthorizationValid(authorizationHeader)) {
+            if (validationService.isAuthorizationHeaderNotValid(authorizationHeader)) {
                 return this.onError(exchange, "Invalid Authorization header", HttpStatus.UNAUTHORIZED);
             }
             ServerHttpRequest modifiedRequest = exchange.getRequest().mutate().
@@ -46,22 +50,6 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
         ServerHttpResponse response = exchange.getResponse();
         response.setStatusCode(httpStatus);
         return response.setComplete();
-    }
-
-    private boolean isAuthorizationValid(String authorizationHeader) {
-        return validateToken(authorizationHeader);
-    }
-
-    private boolean validateToken(String authorizationHeader) {
-        String token = null;
-
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            token = authorizationHeader.substring(7);
-        } else {
-            log.error("Invalid header: " + authorizationHeader);
-            return false;
-        }
-        return !jwtUtil.isTokenExpired(token);
     }
 
     public static class Config {

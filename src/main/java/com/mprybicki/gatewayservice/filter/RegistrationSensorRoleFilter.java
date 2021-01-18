@@ -1,5 +1,6 @@
 package com.mprybicki.gatewayservice.filter;
 
+import com.mprybicki.gatewayservice.service.ValidationService;
 import com.mprybicki.gatewayservice.util.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.RandomStringUtils;
@@ -20,6 +21,9 @@ public class RegistrationSensorRoleFilter extends AbstractGatewayFilterFactory<R
     @Autowired
     JwtUtil jwtUtil;
 
+    @Autowired
+    ValidationService validationService;
+
     public RegistrationSensorRoleFilter() {
         super(Config.class);
     }
@@ -27,19 +31,14 @@ public class RegistrationSensorRoleFilter extends AbstractGatewayFilterFactory<R
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
-            ServerHttpRequest request = exchange.getRequest();
-            //TODO  walidacje do osobnej klasy
-            if (!request.getHeaders().containsKey("Authorization")) {
-                return this.onError(exchange, "No Authorization header", HttpStatus.UNAUTHORIZED);
-            }
 
+            ServerHttpRequest request = exchange.getRequest();
             String authorizationHeader = request.getHeaders().get("Authorization").get(0);
             String token = authorizationHeader.substring(7);
-            if (!jwtUtil.containsClaim(token , "CameraRegistrationRole")
-                    && request.getURI().getPath().contains("/camera/")) {
+
+            if (validationService.isRequestNotContainProperToken(request, token, "CameraRegistrationRole", "/camera/")) {
                 return this.onError(exchange, "User without camera register role", HttpStatus.FORBIDDEN);
-            } else if(!jwtUtil.containsClaim(token, "RFSensorRegistrationRole")
-                    && request.getURI().getPath().contains("/rf-sensor/")){
+            } else if (validationService.isRequestNotContainProperToken(request, token, "RFSensorRegistrationRole", "/rf-sensor/")) {
                 return this.onError(exchange, "User without rf register role", HttpStatus.FORBIDDEN);
             }
 

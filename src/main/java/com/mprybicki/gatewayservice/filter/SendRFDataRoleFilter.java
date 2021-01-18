@@ -1,5 +1,6 @@
 package com.mprybicki.gatewayservice.filter;
 
+import com.mprybicki.gatewayservice.service.ValidationService;
 import com.mprybicki.gatewayservice.util.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.RandomStringUtils;
@@ -20,6 +21,9 @@ public class SendRFDataRoleFilter extends AbstractGatewayFilterFactory<SendRFDat
     @Autowired
     JwtUtil jwtUtil;
 
+    @Autowired
+    ValidationService validationService;
+
     public SendRFDataRoleFilter() {
         super(Config.class);
     }
@@ -27,16 +31,12 @@ public class SendRFDataRoleFilter extends AbstractGatewayFilterFactory<SendRFDat
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
-            ServerHttpRequest request = exchange.getRequest();
-            //TODO  walidacje do osobnej klasy
-            if (!request.getHeaders().containsKey("Authorization")) {
-                return this.onError(exchange, "No Authorization header", HttpStatus.UNAUTHORIZED);
-            }
 
+            ServerHttpRequest request = exchange.getRequest();
             String authorizationHeader = request.getHeaders().get("Authorization").get(0);
             String token = authorizationHeader.substring(7);
-            if (!jwtUtil.containsClaim(token , "SendRFDataRole")
-                    && request.getURI().getPath().contains("/rf-data")) {
+
+            if (validationService.isRequestNotContainProperToken(request, token, "SendRFDataRole", "/rf-data")) {
                 return this.onError(exchange, "User without send rf data role", HttpStatus.FORBIDDEN);
             }
 
