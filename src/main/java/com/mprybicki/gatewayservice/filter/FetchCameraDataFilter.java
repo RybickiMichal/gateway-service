@@ -15,10 +15,10 @@ import java.util.Optional;
 
 @Component
 @Slf4j
-public class CameraSensorUriRequestFilter extends AbstractChangeRequestUriGatewayFilterFactory<CameraSensorUriRequestFilter.Config> {
+public class FetchCameraDataFilter extends AbstractChangeRequestUriGatewayFilterFactory<FetchCameraDataFilter.Config> {
 
-    public CameraSensorUriRequestFilter() {
-        super(CameraSensorUriRequestFilter.Config.class);
+    public FetchCameraDataFilter() {
+        super(FetchCameraDataFilter.Config.class);
     }
 
     @Override

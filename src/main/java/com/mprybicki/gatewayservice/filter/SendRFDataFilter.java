@@ -15,12 +15,12 @@ import reactor.core.publisher.Mono;
 
 @Component
 @Slf4j
-public class SensorRegistrationFilter extends AbstractGatewayFilterFactory<SensorRegistrationFilter.Config> {
+public class SendRFDataFilter extends AbstractGatewayFilterFactory<SendRFDataFilter.Config> {
 
     @Autowired
     JwtUtil jwtUtil;
 
-    public SensorRegistrationFilter() {
+    public SendRFDataFilter() {
         super(Config.class);
     }
 
@@ -35,12 +35,9 @@ public class SensorRegistrationFilter extends AbstractGatewayFilterFactory<Senso
 
             String authorizationHeader = request.getHeaders().get("Authorization").get(0);
             String token = authorizationHeader.substring(7);
-            if (!jwtUtil.containsClaim(token , "CameraRegistrationRole")
-                    && request.getURI().getPath().contains("/camera/")) {
-                return this.onError(exchange, "User without camera register role", HttpStatus.FORBIDDEN);
-            } else if(!jwtUtil.containsClaim(token, "RFSensorRegistrationRole")
-                    && request.getURI().getPath().contains("/rf-sensor/")){
-                return this.onError(exchange, "User without rf register role", HttpStatus.FORBIDDEN);
+            if (!jwtUtil.containsClaim(token , "SendRFDataRole")
+                    && request.getURI().getPath().contains("/rf-data")) {
+                return this.onError(exchange, "User without send rf data", HttpStatus.FORBIDDEN);
             }
 
             ServerHttpRequest modifiedRequest = exchange.getRequest().mutate().
