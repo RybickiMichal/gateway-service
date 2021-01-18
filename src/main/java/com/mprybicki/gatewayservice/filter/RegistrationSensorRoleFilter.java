@@ -15,12 +15,12 @@ import reactor.core.publisher.Mono;
 
 @Component
 @Slf4j
-public class RegistrationSensorFilter extends AbstractGatewayFilterFactory<RegistrationSensorFilter.Config> {
+public class RegistrationSensorRoleFilter extends AbstractGatewayFilterFactory<RegistrationSensorRoleFilter.Config> {
 
     @Autowired
     JwtUtil jwtUtil;
 
-    public RegistrationSensorFilter() {
+    public RegistrationSensorRoleFilter() {
         super(Config.class);
     }
 

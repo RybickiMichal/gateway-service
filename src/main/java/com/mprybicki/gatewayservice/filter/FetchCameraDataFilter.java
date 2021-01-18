@@ -26,7 +26,6 @@ public class FetchCameraDataFilter extends AbstractChangeRequestUriGatewayFilter
         return Arrays.asList(NAME_KEY);
     }
 
-    //TODO this should be available only for user with camera-service role. Also header validation is needed
     @Override
     protected Optional<URI> determineRequestUri(ServerWebExchange exchange,
                                                 Config config) {
