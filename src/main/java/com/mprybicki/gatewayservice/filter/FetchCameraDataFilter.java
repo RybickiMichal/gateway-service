@@ -41,7 +41,5 @@ public class FetchCameraDataFilter extends AbstractChangeRequestUriGatewayFilter
         });
     }
 
-    public static class Config {
-
-    }
+    public static class Config {}
 }

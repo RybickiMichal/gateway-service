@@ -1,18 +1,15 @@
 package com.mprybicki.gatewayservice.filter;
 
+import com.mprybicki.gatewayservice.service.ErrorService;
 import com.mprybicki.gatewayservice.service.ValidationService;
 import com.mprybicki.gatewayservice.util.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ServerWebExchange;
-import reactor.core.publisher.Mono;
 
 @Component
 @Slf4j
@@ -23,6 +20,9 @@ public class SendRFDataRoleFilter extends AbstractGatewayFilterFactory<SendRFDat
 
     @Autowired
     ValidationService validationService;
+
+    @Autowired
+    ErrorService errorService;
 
     public SendRFDataRoleFilter() {
         super(Config.class);
@@ -37,23 +37,12 @@ public class SendRFDataRoleFilter extends AbstractGatewayFilterFactory<SendRFDat
             String token = authorizationHeader.substring(7);
 
             if (validationService.isRequestNotContainProperToken(request, token, "SendRFDataRole", "/rf-data")) {
-                return this.onError(exchange, "User without send rf data role", HttpStatus.FORBIDDEN);
+                return errorService.onError(exchange, HttpStatus.FORBIDDEN);
             }
 
-            ServerHttpRequest modifiedRequest = exchange.getRequest().mutate().
-                    header("secret", RandomStringUtils.random(10)).
-                    build();
-            return chain.filter(exchange.mutate().request(modifiedRequest).build());
+            return chain.filter(exchange.mutate().request(request).build());
         };
     }
 
-    private Mono<Void> onError(ServerWebExchange exchange, String err, HttpStatus httpStatus) {
-        ServerHttpResponse response = exchange.getResponse();
-        response.setStatusCode(httpStatus);
-        return response.setComplete();
-    }
-
-    public static class Config {
-
-    }
+    public static class Config {}
 }
